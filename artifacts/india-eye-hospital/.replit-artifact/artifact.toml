@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "India Eye Hospital"
+description = "A bilingual public website for India Eye Hospital, with clear walk-in guidance for routine eye care and an online cataract appointment request that captures patient registration details for staff follow-up."
+version = "1.0.0"
+id = "artifacts/india-eye-hospital"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26262
+
+[services.development]
+run = "pnpm --filter @workspace/india-eye-hospital run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/india-eye-hospital", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/india-eye-hospital/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26262"
+BASE_PATH = "/"
