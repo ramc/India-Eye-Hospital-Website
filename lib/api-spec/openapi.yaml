@@ -3,13 +3,15 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: India Eye Hospital appointment request and registration intake API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: appointments
+    description: Public cataract appointment requests
 paths:
   /healthz:
     get:
@@ -24,6 +26,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /appointments:
+    post:
+      operationId: createAppointment
+      tags: [appointments]
+      summary: Submit a cataract appointment request
+      description: Stores patient registration details for staff follow-up. This does not confirm an appointment time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentInput"
+      responses:
+        "201":
+          description: Request received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppointmentCreated"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +66,61 @@ components:
           type: string
       required:
         - status
+    AppointmentInput:
+      type: object
+      additionalProperties: false
+      properties:
+        patientName:
+          type: string
+          minLength: 2
+          maxLength: 120
+        phoneNumber:
+          type: string
+          minLength: 10
+          maxLength: 18
+          pattern: "^[+0-9][0-9\\s()-]{8,17}$"
+        language:
+          type: string
+          enum: [en, hi]
+        preferredDate:
+          type: ["string", "null"]
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        paymentType:
+          type: string
+          enum: [self_pay, insurance]
+        insuranceProvider:
+          type: ["string", "null"]
+          maxLength: 120
+        consent:
+          type: boolean
+          enum: [true]
+      required:
+        - patientName
+        - phoneNumber
+        - language
+        - preferredDate
+        - paymentType
+        - insuranceProvider
+        - consent
+    AppointmentCreated:
+      type: object
+      properties:
+        requestId:
+          type: string
+        status:
+          type: string
+          enum: [received]
+        message:
+          type: string
+      required:
+        - requestId
+        - status
+        - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 
